@@ -3,6 +3,7 @@ package edu.iis.mto.testreactor.exc3;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 
 import java.util.List;
 
@@ -181,5 +182,31 @@ public class AtmMachineTest {
 
         int resultSum = argument.getValue().stream().mapToInt(x -> x.getValue()).sum();
         assertThat(resultSum, is(280));
+    }
+
+    @Test
+    public void commitShouldBeCalledAfterStartTransaction() {
+        Money money = Money.builder().withAmount(100).withCurrency(Currency.PL).build();
+        Card card = Card.builder().withCardNumber("1234").withPinNumber(1234).build();
+
+        AuthenticationToken authenticationToken = AuthenticationToken.builder().withAuthorizationCode(1234).withUserId("1234").build();
+
+        // Quick workaround for Mockito complaining about possible exception
+        try {
+            when(cardProviderService.authorize(any())).thenReturn(AuthenticationToken.builder().withAuthorizationCode(1234).withUserId("1234").build());
+        } catch (Exception e) {
+            System.err.println(e);
+            fail();
+        }
+
+        sut.withdraw(money, card);
+
+        InOrder inOrder = inOrder(bankService);
+
+        inOrder.verify(bankService).startTransaction(any());
+        inOrder.verify(bankService).commit(any());
+
+        verify(bankService, times(1)).startTransaction(any());
+        verify(bankService, times(1)).commit(any());
     }
 }
