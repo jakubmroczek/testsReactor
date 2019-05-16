@@ -1,6 +1,6 @@
 package edu.iis.mto.testreactor.exc3;
 
-import static edu.iis.mto.testreactor.exc3.Banknote.PL100;
+import static edu.iis.mto.testreactor.exc3.Banknote.*;
 import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
@@ -99,5 +99,22 @@ public class AtmMachineTest {
         sut.withdraw(money, card);
 
         verify(bankService, times(1)).charge(any(), eq(money));
+    }
+
+    @Test
+    public void transactionShouldBeAbortedInCaseOfLackingFunds() {
+        Money money = Money.builder().withAmount(100).withCurrency(Currency.PL).build();
+        Card card = Card.builder().withCardNumber("1234").withPinNumber(1234).build();
+
+        // Quick workaround for Mockito complaining about possible exception
+        try {
+            when(cardProviderService.authorize(any())).thenReturn(AuthenticationToken.builder().withAuthorizationCode(1234).withUserId("1234").build());
+            doThrow(InsufficientFundsException.class).when(bankService).charge(any(), any());
+            sut.withdraw(money, card);
+
+            fail();
+        } catch (Exception e) {
+            verify(bankService, times(1)).abort(any());
+        }
     }
 }
