@@ -1,22 +1,15 @@
 package edu.iis.mto.testreactor.exc3;
 
-import static edu.iis.mto.testreactor.exc3.Banknote.*;
+import org.junit.Before;
+import org.junit.Test;
+
+import static edu.iis.mto.testreactor.exc3.Banknote.PL100;
 import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isNotNull;
 import static org.mockito.Mockito.*;
-
-import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-
-import java.lang.reflect.Parameter;
 
 public class AtmMachineTest {
 
