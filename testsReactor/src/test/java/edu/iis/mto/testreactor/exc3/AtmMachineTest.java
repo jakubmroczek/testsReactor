@@ -9,8 +9,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
@@ -38,7 +37,7 @@ public class AtmMachineTest {
     }
 
     @Test
-    public void paymentShouldContainDesiredAmountOfMoney() throws CardAuthorizationException{
+    public void paymentShouldContainDesiredAmountOfMoney() throws CardAuthorizationException {
         Money money = Money.builder().withAmount(100).withCurrency(Currency.PL).build();
         Card card = Card.builder().withCardNumber("1234").withPinNumber(1234).build();
 
@@ -66,5 +65,21 @@ public class AtmMachineTest {
         sut.withdraw(money, card);
     }
 
+    @Test
+    public void verificationShouldBePerformed() throws CardAuthorizationException {
+        Money money = Money.builder().withAmount(100).withCurrency(Currency.PL).build();
+        Card card = Card.builder().withCardNumber("1234").withPinNumber(1234).build();
 
+        // Quick workaround for Mockito complaining about possible exception
+        try {
+            when(cardProviderService.authorize(any())).thenReturn(AuthenticationToken.builder().withAuthorizationCode(1234).withUserId("1234").build());
+        } catch (Exception e) {
+            System.err.println(e);
+            fail();
+        }
+
+        sut.withdraw(money, card);
+
+        verify(cardProviderService, times(1)).authorize(card);
+    }
 }
