@@ -82,4 +82,22 @@ public class AtmMachineTest {
 
         verify(cardProviderService, times(1)).authorize(card);
     }
+
+    @Test
+    public void withdrawnMoneyShouldBeSubtractedFromAccount() throws InsufficientFundsException {
+        Money money = Money.builder().withAmount(100).withCurrency(Currency.PL).build();
+        Card card = Card.builder().withCardNumber("1234").withPinNumber(1234).build();
+
+        // Quick workaround for Mockito complaining about possible exception
+        try {
+            when(cardProviderService.authorize(any())).thenReturn(AuthenticationToken.builder().withAuthorizationCode(1234).withUserId("1234").build());
+        } catch (Exception e) {
+            System.err.println(e);
+            fail();
+        }
+
+        sut.withdraw(money, card);
+
+        verify(bankService, times(1)).charge(any(), eq(money));
+    }
 }
