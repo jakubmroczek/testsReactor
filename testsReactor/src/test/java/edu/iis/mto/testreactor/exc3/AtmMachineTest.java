@@ -130,4 +130,20 @@ public class AtmMachineTest {
 
         verify(bankService, times(1)).startTransaction(eq(authenticationToken));
     }
+
+    @Test
+    public void moneyShouldBeRemovedFromTheDepot() throws MoneyDepotException {
+        Money money = Money.builder().withAmount(100).withCurrency(Currency.PL).build();
+        Card card = Card.builder().withCardNumber("1234").withPinNumber(1234).build();
+
+        // Quick workaround for Mockito complaining about possible exception
+        try {
+            when(cardProviderService.authorize(any())).thenReturn(AuthenticationToken.builder().withAuthorizationCode(1234).withUserId("1234").build());
+        } catch (Exception e) {
+        }
+
+        sut.withdraw(money, card);
+
+        verify(moneyDepot, times(1)).releaseBanknotes(any());
+    }
 }
