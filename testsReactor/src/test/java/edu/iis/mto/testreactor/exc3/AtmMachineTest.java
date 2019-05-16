@@ -2,6 +2,9 @@ package edu.iis.mto.testreactor.exc3;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+
+import java.util.List;
 
 import static edu.iis.mto.testreactor.exc3.Banknote.*;
 import static junit.framework.TestCase.fail;
@@ -162,5 +165,21 @@ public class AtmMachineTest {
         assertThat(result.getValue().get(1), is(PL20));
         assertThat(result.getValue().get(2), is(PL50));
         assertThat(result.getValue().get(3), is(PL200));
+    }
+
+    @Test
+    public void atmShouldNotDispatchMoreMoneyThatHeWasToldTo() throws MoneyDepotException {
+        Money money = Money.builder().withAmount(280).withCurrency(Currency.PL).build();
+        Card card = Card.builder().withCardNumber("1234").withPinNumber(1234).build();
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<Banknote>> argument = ArgumentCaptor.forClass((Class<List<Banknote>>)(Object)List.class);
+
+        sut.withdraw(money, card);
+
+        verify(moneyDepot).releaseBanknotes(argument.capture());
+
+        int resultSum = argument.getValue().stream().mapToInt(x -> x.getValue()).sum();
+        assertThat(resultSum, is(280));
     }
 }
