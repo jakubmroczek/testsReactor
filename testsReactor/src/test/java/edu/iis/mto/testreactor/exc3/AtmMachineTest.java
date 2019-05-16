@@ -1,6 +1,7 @@
 package edu.iis.mto.testreactor.exc3;
 
 import static edu.iis.mto.testreactor.exc3.Banknote.PL100;
+import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -48,4 +49,22 @@ public class AtmMachineTest {
         assertThat(result.getValue().size(), is(1));
         assertThat(result.getValue().get(0), is(PL100));
     }
+
+    @Test(expected = WrongMoneyAmountException.class)
+    public void shouldNotWithrawImpossibleAmountOfMoney() {
+        Money money = Money.builder().withAmount(44).withCurrency(Currency.PL).build();
+        Card card = Card.builder().withCardNumber("1234").withPinNumber(1234).build();
+
+        // Quick workaround for Mockito complaining about possible exception
+       try {
+           when(cardProviderService.authorize(any())).thenReturn(AuthenticationToken.builder().withAuthorizationCode(1234).withUserId("1234").build());
+       } catch (Exception e) {
+           System.err.println(e);
+           fail();
+       }
+
+        sut.withdraw(money, card);
+    }
+
+
 }
