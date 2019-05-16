@@ -3,7 +3,7 @@ package edu.iis.mto.testreactor.exc3;
 import org.junit.Before;
 import org.junit.Test;
 
-import static edu.iis.mto.testreactor.exc3.Banknote.PL100;
+import static edu.iis.mto.testreactor.exc3.Banknote.*;
 import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
@@ -145,5 +145,22 @@ public class AtmMachineTest {
         sut.withdraw(money, card);
 
         verify(moneyDepot, times(1)).releaseBanknotes(any());
+    }
+
+    @Test
+    public void atmShouldReturnPaymentInTheBiggestPossibleBanknotes() throws CardAuthorizationException {
+        Money money = Money.builder().withAmount(280).withCurrency(Currency.PL).build();
+        Card card = Card.builder().withCardNumber("1234").withPinNumber(1234).build();
+
+        when(cardProviderService.authorize(any())).thenReturn(AuthenticationToken.builder().withAuthorizationCode(1234).withUserId("1234").build());
+
+        Payment result = sut.withdraw(money, card);
+
+        // Should be, 200, 50, 20, 10 not 100, 100, 50, 20, 10 or anything like that
+        assertThat(result.getValue().size(), is(4));
+        assertThat(result.getValue().get(0), is(PL10));
+        assertThat(result.getValue().get(1), is(PL20));
+        assertThat(result.getValue().get(2), is(PL50));
+        assertThat(result.getValue().get(3), is(PL200));
     }
 }
